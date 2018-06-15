@@ -30,12 +30,16 @@ class MainAnalysis
   end
 end
 
-pathDirectories = Array.new
-ARGV.each do |pathOne|
-  pathDirectories.push(pathOne)
+parameters = []
+File.open("properties", "r") do |text|
+  indexLine = 0
+  text.each_line do |line|
+    parameters[indexLine] = line[/\<(.*?)\>/, 1]
+    indexLine += 1
+  end
 end
-#mainAnalysis = MainAnalysis.new(pathDirectories[0], pathDirectories[1])
-mainAnalysis = MainAnalysis.new("/home/paulo/", "/home/paulo/Documentos/PHD/projects/okhttp")
+
+mainAnalysis = MainAnalysis.new(parameters[0], parameters[1])
 
 mainAnalysis.getGitProject().associateLogToCommitGroup(mainAnalysis.getProjectBuilds().getMavenLogs())
 puts
