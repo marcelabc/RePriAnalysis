@@ -31,9 +31,15 @@ class GitProject
 
   def getReflogOfProject()
     actualPath = Dir.pwd
-    Dir.chdir @pathProject
-    logGit = StringIO.new(%x(git reflog --date=local))
-    Dir.chdir actualPath
+    logGit = []
+    begin
+      Dir.chdir @pathProject
+      logGit = StringIO.new(%x(git reflog --date=local))
+      Dir.chdir actualPath
+    rescue Exception => e
+      puts e.message
+      puts "Inexistent git repository locally"
+    end
     return logGit
   end
 

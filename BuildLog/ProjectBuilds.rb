@@ -24,14 +24,20 @@ class ProjectBuilds
 
   def collectAllActions()
     actualPath = Dir.pwd
-    Dir.chdir @pathLog
     auxAllActions = Array.new
-    Dir.glob("*.log").each do |oneFile|
-      if File.readlines(oneFile).any?{ |l| l['BUILD FAILURE'] }
-        if File.readlines(oneFile).any?{ |l| l[@projectName] }
-          auxAllActions.push(MavenLog.new(oneFile))
+    begin
+      Dir.chdir @pathLog
+
+      Dir.glob("*.log").each do |oneFile|
+        if File.readlines(oneFile).any?{ |l| l['BUILD FAILURE'] }
+          if File.readlines(oneFile).any?{ |l| l[@projectName] }
+            auxAllActions.push(MavenLog.new(oneFile))
+          end
         end
       end
+    rescue Exception => e
+      puts e.message
+      puts "Inexistent directory"
     end
 
     Dir.chdir actualPath
