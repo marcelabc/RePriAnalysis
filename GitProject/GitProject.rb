@@ -1,11 +1,12 @@
 class GitProject
 
-  def initialize(pathProject)
+  def initialize(pathProject, mavenLogs)
     @pathProject = pathProject
     @reflog = getReflogOfProject()
     @actionsLog = Array.new
     @mergeCommits = Array.new
-    collectAllActionsFromReflog()
+    collectAllActionsFromReflog(mavenLogs)
+    @mergeWithLogs = Array.new
   end
 
   def getPathProject()
@@ -20,6 +21,14 @@ class GitProject
     @actionsLog
   end
 
+  def getMergeCommits()
+    @mergeCommits
+  end
+
+  def getMergeWithLogs()
+    @mergeWithLogs
+  end
+
   def getReflogOfProject()
     actualPath = Dir.pwd
     Dir.chdir @pathProject
@@ -28,14 +37,62 @@ class GitProject
     return logGit
   end
 
-  def collectAllActionsFromReflog()
+  def collectAllActionsFromReflog(mavenLogs)
     @reflog.each do |log|
       auxActionLog = ActionLog.new(log)
+      auxActionLog.setAssociatedLogs(findAssociatedLog(mavenLogs, auxActionLog.getGitHash))
       @actionsLog.push(auxActionLog)
-      if (auxActionLog.getCommand.include? 'merge')
-        @mergeCommits.push(MergeCommit.new(auxActionLog.getGitHash, @pathProject))
+      if (@mergeCommits.size == 0)
+        @mergeCommits.push(MergeCommit.new(auxActionLog.getGitHash, @pathProject, auxActionLog.getDate))
+      elsif (auxActionLog.getCommand.include? 'merge')
+        @mergeCommits.push(MergeCommit.new(auxActionLog.getGitHash, @pathProject, auxActionLog.getDate))
+      elsif (auxActionLog.getCommand.include? 'clone')
+        @mergeCommits.push(MergeCommit.new(auxActionLog.getGitHash, @pathProject, auxActionLog.getDate))
       end
     end
+  end
+
+  def findAssociatedLog(mavenLogs, gitHash)
+    associatedLogs = []
+    mavenLogs.each do |log|
+      if (log.getGitHash.include? gitHash[0..6].to_s)
+        associatedLogs.push(log)
+      end
+    end
+    return associatedLogs
+  end
+
+  def associateLogToCommitGroup(mavenLogs)
+    buildLogs = []
+    mavenLogs.each do |log|
+      buildLogs.push(log)
+    end
+    count = 0
+    while(count < @mergeCommits.size-1)
+      mergeWithLog = MergeWithLog.new(@mergeCommits[count], @mergeCommits[count+1])
+      buildLogs.each do |oneLog|
+        if (oneLog.getDate() > @mergeCommits[count+1].getDate())
+          mergeWithLog.addBuildLog(oneLog)
+        end
+      end
+
+      mergeWithLog.getBuildLogs.each do |oneLog|
+        buildLogs.delete(oneLog)
+      end
+
+      @mergeWithLogs.push(mergeWithLog)
+      mergeWithLog = nil
+      count += 1
+    end
+  end
+
+  def findDateActionLogFromHash(gitHash)
+    @actionsLog.each do |actionLog|
+      if (actionLog.getGitHash == gitHash)
+        return actionLog.getDate
+      end
+    end
+    return ""
   end
 
 end

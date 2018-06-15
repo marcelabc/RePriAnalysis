@@ -9,6 +9,7 @@ class ActionLog
     @date = findDateFromLine()
     @command = findCommandFromLine()
     @message = findMessageFromLine()
+    @associatedLogs = []
   end
 
   def getGitHash()
@@ -29,6 +30,14 @@ class ActionLog
 
   def getMessage()
     @message
+  end
+
+  def getAssociatedLogs()
+    @associatedLogs
+  end
+
+  def setAssociatedLogs(logs)
+    @associatedLogs = logs
   end
 
   def findHashFromLine()

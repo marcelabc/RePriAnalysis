@@ -1,8 +1,9 @@
 class MergeCommit
 
-  def initialize(gitHash, pathProject)
+  def initialize(gitHash, pathProject, date)
     @mergeCommit = gitHash
     @mergeParents = findMergeParents(pathProject)
+    @date = date
   end
 
   def getMergeCommit()
@@ -11,6 +12,10 @@ class MergeCommit
 
   def getMergeParents()
     @mergeParents
+  end
+
+  def getDate()
+    @date
   end
 
   def findMergeParents(pathProject)
