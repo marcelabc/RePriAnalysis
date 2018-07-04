@@ -5,6 +5,8 @@ class GitProject
     @reflog = getReflogOfProject()
     @actionsLog = Array.new
     @mergeCommits = Array.new
+    @rebaseCommits = Array.new
+    @squashCommits = Array.new
     collectAllActionsFromReflog(mavenLogs)
     @mergeWithLogs = Array.new
   end
@@ -21,12 +23,20 @@ class GitProject
     @actionsLog
   end
 
+  def getRebaseCommits()
+    @rebaseCommits
+  end
+
   def getMergeCommits()
     @mergeCommits
   end
 
   def getMergeWithLogs()
     @mergeWithLogs
+  end
+
+  def getSquashCommits()
+    @squashCommits
   end
 
   def getReflogOfProject()
@@ -44,16 +54,35 @@ class GitProject
   end
 
   def collectAllActionsFromReflog(mavenLogs)
+    newRebase = false
+    rebaseCommitAux = ""
+    dateRebaseAux = ""
     @reflog.each do |log|
       auxActionLog = ActionLog.new(log)
       auxActionLog.setAssociatedLogs(findAssociatedLog(mavenLogs, auxActionLog.getGitHash))
       @actionsLog.push(auxActionLog)
+
       if (@mergeCommits.size == 0)
         @mergeCommits.push(MergeCommit.new(auxActionLog.getGitHash, @pathProject, auxActionLog.getDate))
       elsif (auxActionLog.getCommand.include? 'merge')
         @mergeCommits.push(MergeCommit.new(auxActionLog.getGitHash, @pathProject, auxActionLog.getDate))
       elsif (auxActionLog.getCommand.include? 'clone')
         @mergeCommits.push(MergeCommit.new(auxActionLog.getGitHash, @pathProject, auxActionLog.getDate))
+      end
+
+      if (auxActionLog.getOriginalLine.include? 'rebase finished')
+        newRebase = true
+        rebaseCommitAux = auxActionLog.getGitHash
+        dateRebaseAux = auxActionLog.getDate
+      elsif (newRebase == true and auxActionLog.getOriginalLine.include? 'rebase: checkout')
+        @rebaseCommits.push(Rebase.new(rebaseCommitAux, auxActionLog.getGitHash, dateRebaseAux,auxActionLog.getDate))
+        newRebase = false
+        rebaseCommitAux = ""
+        dateRebaseAux = ""
+      end
+
+      if (auxActionLog.getCommand() == " rebase -i (squash)")
+        @squashCommits.push(SquashCommit.new(auxActionLog.getGitHash, auxActionLog.getDate))
       end
     end
   end

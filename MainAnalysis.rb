@@ -60,7 +60,7 @@ end
 
 puts
 puts "ACTIONS"
-mainAnalysis.getGitProject.getActionsLog.each do |log|
-  puts "#{log.getGitHash} - #{log.getAssociatedLogs().size}"
+mainAnalysis.getGitProject.getSquashCommits.each do |log|
+  puts "#{log.getHash} - #{log.getDate}"
 end
 
