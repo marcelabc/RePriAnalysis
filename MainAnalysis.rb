@@ -70,3 +70,8 @@ mainAnalysis.getGitProject.getRebaseCommits.each do |log|
   puts "#{log.getHashOne} - #{log.getHashTwo}"
 end
 
+puts
+puts "Cherry-Pick"
+mainAnalysis.getGitProject.getCherryPickCommits.each do |log|
+  puts "#{log.getHash} - #{log.getDate}"
+end

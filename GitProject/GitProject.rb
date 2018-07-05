@@ -7,6 +7,7 @@ class GitProject
     @mergeCommits = Array.new
     @rebaseCommits = Array.new
     @squashCommits = Array.new
+    @cherryPickCommits = Array.new
     collectAllActionsFromReflog(mavenLogs)
     @mergeWithLogs = Array.new
   end
@@ -37,6 +38,10 @@ class GitProject
 
   def getSquashCommits()
     @squashCommits
+  end
+
+  def getCherryPickCommits()
+    @cherryPickCommits
   end
 
   def getReflogOfProject()
@@ -97,6 +102,10 @@ class GitProject
       elsif (auxActionLog.getCommand() == " rebase -i (start)" and newSquash)
         newSquash = false
         @squashCommits.push(currentSquash)
+      end
+
+      if (auxActionLog.getCommand == " cherry-pick")
+        @cherryPickCommits.push(CherryPick.new(auxActionLog.getGitHash, auxActionLog.getDate))
       end
     end
   end
