@@ -57,6 +57,9 @@ class GitProject
     newRebase = false
     rebaseCommitAux = ""
     dateRebaseAux = ""
+    newSquash = false
+    currentSquash = SquashCommit.new
+    squashCommitAux = ""
     @reflog.each do |log|
       auxActionLog = ActionLog.new(log)
       auxActionLog.setAssociatedLogs(findAssociatedLog(mavenLogs, auxActionLog.getGitHash))
@@ -81,8 +84,19 @@ class GitProject
         dateRebaseAux = ""
       end
 
-      if (auxActionLog.getCommand() == " rebase -i (squash)")
-        @squashCommits.push(SquashCommit.new(auxActionLog.getGitHash, auxActionLog.getDate))
+      if (auxActionLog.getCommand() == " rebase -i (finish)")
+        currentSquash = SquashCommit.new
+        newSquash = true
+        currentSquash.setFinalHash(auxActionLog.getGitHash)
+        squashCommitAux = auxActionLog.getGitHash
+      elsif (auxActionLog.getOriginalLine.include? "rebase: aborting" and newSquash)
+        currentSquash = nil
+        newSquash = false
+      elsif ((auxActionLog.getCommand() == " rebase -i (squash)" or auxActionLog.getCommand() == " rebase -i (pick)") and newSquash)
+        currentSquash.addAssociatedCommit(auxActionLog.getGitHash)
+      elsif (auxActionLog.getCommand() == " rebase -i (start)" and newSquash)
+        newSquash = false
+        @squashCommits.push(currentSquash)
       end
     end
   end

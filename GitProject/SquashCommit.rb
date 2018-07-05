@@ -1,16 +1,26 @@
 class SquashCommit
 
-  def initialize(hash, date)
-    @hash = hash
-    @date = date
+  def initialize()
+    @finalHash = ""
+    @associatedCommits = Array.new
   end
 
-  def getHash()
-    @hash
+  def setFinalHash(commit)
+    @finalHash = commit
   end
 
-  def getDate()
-    @date
+  def getFinalHash()
+    @finalHash
+  end
+
+  def getAssociatedCommits()
+    @associatedCommits
+  end
+
+  def addAssociatedCommit(commit)
+    if (commit != getFinalHash)
+      @associatedCommits.push(commit)
+    end
   end
 
 end

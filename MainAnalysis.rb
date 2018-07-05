@@ -59,8 +59,14 @@ mainAnalysis.getProjectBuilds.getMavenLogs.each do |algo|
 end
 
 puts
-puts "ACTIONS"
+puts "Squash"
 mainAnalysis.getGitProject.getSquashCommits.each do |log|
-  puts "#{log.getHash} - #{log.getDate}"
+  puts "#{log.getFinalHash} - #{log.getAssociatedCommits}"
+end
+
+puts
+puts "Rebase"
+mainAnalysis.getGitProject.getRebaseCommits.each do |log|
+  puts "#{log.getHashOne} - #{log.getHashTwo}"
 end
 
