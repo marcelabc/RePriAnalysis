@@ -10,6 +10,7 @@ class ActionLog
     @command = findCommandFromLine()
     @message = findMessageFromLine()
     @associatedLogs = []
+    @teste = ""
   end
 
   def getGitHash()
